@@ -2,19 +2,20 @@
 #define COLLECTIONOBSERVER_H
 
 #include <iostream>
+#include "Observer.h"
 
-class CollectionObserver {
+class CollectionObserver : public Observer {
     public:
         CollectionObserver() = default;
         ~CollectionObserver() = default;
-        void updateCollectionSize(const std::string& collectionName, int info) const;
+        void update(const std::string& collectionName, int size) override;
         bool operator==(const CollectionObserver& obs) const;
 };
 
 
 /* Implementation */
-void CollectionObserver::updateCollectionSize(const std::string& collectionName, int info) const {
-    std::cout << "Collection '" << collectionName << "' size updated: " << info << std::endl;
+void CollectionObserver::update(const std::string& collectionName, int size) {
+    std::cout << "Collection '" << collectionName << "' size updated: " << size << std::endl;
 }
 
 bool CollectionObserver::operator==(const CollectionObserver& obs) const{

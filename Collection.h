@@ -7,22 +7,24 @@
 #include <memory>
 #include "CollectionObserver.h"
 #include "Note.h"
+#include "Subject.h"
 
 
-class Collection {
+class Collection : public Subject {
     private:
         std::string name;
-        std::vector<Note> notes;
-        std::vector<CollectionObserver> observers;
+        std::vector<std::weak_ptr<Note>> notes;
+        std::vector<std::shared_ptr<Observer>> observers;
 
     public:
         Collection(const std::string& name);
         ~Collection() = default;
-        void addNote(const Note& note);
-        void removeNote(const Note& note);
-        void subscribe(const CollectionObserver& observer);
-        void unsubscribe(const CollectionObserver& observer);
-        void notifyObserver(int info);
+        const std::string getName() const;
+        void addNote(const std::weak_ptr<Note> note);
+        void removeNote(const std::weak_ptr<Note> note);
+        void attach(const std::shared_ptr<Observer> observer) override;
+        void detach(const std::shared_ptr<Observer> observer) override;
+        void notifyObserver(int info) override;
 };
 
 
@@ -30,24 +32,43 @@ class Collection {
 
 Collection::Collection(const std::string& name) : name(name) {}
 
-void Collection::addNote(const Note& note) {
+const std::string Collection::getName() const {
+    return name;
+}
+
+void Collection::addNote(const std::weak_ptr<Note> note) {
     notes.push_back(note);
     notifyObserver(notes.size());
 }
 
-void Collection::removeNote(const Note& note) {
-    auto it = std::find(notes.begin(), notes.end(), note);
-    if (it != notes.end()) {
+void Collection::removeNote(const std::weak_ptr<Note> note) {
+    int i = 0;
+    bool found = false;
+    std::vector<std::weak_ptr<Note>>::iterator it;
+    for(auto n: notes) {
+        auto s_n = n.lock();
+        auto s_note = note.lock();
+
+        if(*s_n == *s_note){
+            found = true;
+            it = std::next(notes.begin(), i);
+            break;
+        }
+
+        i++;
+    }
+    
+    if (found) {
         notes.erase(it);
         notifyObserver(notes.size());
     }
 }
 
-void Collection::subscribe(const CollectionObserver& observer) {
+void Collection::attach(const std::shared_ptr<Observer> observer) {
     observers.push_back(observer);
 }
 
-void Collection::unsubscribe(const CollectionObserver& observer) {
+void Collection::detach(const std::shared_ptr<Observer> observer) {
     auto it = std::find(observers.begin(), observers.end(), observer);
     if (it != observers.end()) {
         observers.erase(it);
@@ -55,8 +76,8 @@ void Collection::unsubscribe(const CollectionObserver& observer) {
 }
 
 void Collection::notifyObserver(int newSize) {
-    for (CollectionObserver observer : observers) {
-        observer.updateCollectionSize(name, newSize);
+    for (auto observer : observers) {
+        observer->update(name, newSize);
     }
 }
 
