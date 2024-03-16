@@ -47,7 +47,7 @@ void Note::setTitle(std::string& newTitle) {
 
 void Note::setText(std::string& newText) {
     if(!locked)
-        title = newText;
+        text = newText;
 }
 
 const std::string& Note::getTitle() const {

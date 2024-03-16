@@ -2,37 +2,58 @@
 #define EDITOR_H
 
 #include <vector>
-#include "Strategy.h"
-#include "DeleteNoteStrategy.h"
+#include <memory>
 #include "Collection.h"
 
 class Editor {
     private: 
-        Strategy* strategy;
-        std::vector<Collection> collections;
+        std::vector<std::shared_ptr<Collection>>& collections;
 
     public:
-        Editor(std::vector<Collection> cls) : strategy(nullptr), collections(cls) {};
+        Editor(std::vector<std::shared_ptr<Collection>>& cls) : collections(cls) {};
         ~Editor() = default;
-        void setStrategy(Strategy* newStrategy);
-        void edit(Note& note);
+        void editNote(Note& note) const;
+        void deleteNote(Note& note) const;
 };
 
-void Editor::setStrategy(Strategy* newStrategy) {
-    strategy = newStrategy;
-}
-
-void Editor::edit(Note& note) {
-    if(note.isLocked() || strategy == nullptr)
+void Editor::editNote(Note& note) const {
+    if(note.isLocked())
         return;
+    
+    std::cout << "Enter text. Type 'END' on a new line to finish: \n";
 
-    if(typeid(strategy) == typeid(DeleteNoteStrategy*)) {
-        for(auto c: collections) {
-            c.removeNote(note);
+    std::string noteContent;
+    while (true) {
+        std::string line;
+        std::getline(std::cin, line);
+        if (line == "END") {
+            break;
         }
+        noteContent += line + "\n";
     }
 
-    strategy->execute(note);
+    if(noteContent != std::string("END")){
+        note.setText(noteContent);
+    }
+
+    std::string newTitle;
+    std::cout << "Enter a new title or type END: ";
+    std::getline(std::cin, newTitle);
+
+    if(newTitle != std::string("END")){
+        note.setTitle(newTitle);
+    }
+}
+
+void Editor::deleteNote(Note& note) const {
+    if(note.isLocked())
+        return;
+
+    for(auto c: collections) {
+            c->removeNote(note);
+        }
+
+    note.~Note();
 }
 
 #endif

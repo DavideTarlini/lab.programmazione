@@ -7,13 +7,13 @@ class CollectionObserver {
     public:
         CollectionObserver() = default;
         ~CollectionObserver() = default;
-        void updateCollectionSize(const std::string& collectionName, int info);
+        void updateCollectionSize(const std::string& collectionName, int info) const;
         bool operator==(const CollectionObserver& obs) const;
 };
 
 
 /* Implementation */
-void CollectionObserver::updateCollectionSize(const std::string& collectionName, int info) {
+void CollectionObserver::updateCollectionSize(const std::string& collectionName, int info) const {
     std::cout << "Collection '" << collectionName << "' size updated: " << info << std::endl;
 }
 
