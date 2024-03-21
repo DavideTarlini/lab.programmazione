@@ -5,7 +5,7 @@
 
 class Observer {
 public:
-    virtual void update(const std::string& collectionName, int size) = 0;
+    virtual void update(bool attached) = 0;
 };
 
 #endif 
