@@ -5,7 +5,7 @@
 
 class Observer {
 public:
-    virtual void update(bool attached) = 0;
+    virtual void update(std::weak_ptr<Observer> obs, bool attached) = 0;
 };
 
 #endif 

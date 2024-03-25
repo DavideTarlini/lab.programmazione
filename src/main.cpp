@@ -1,12 +1,9 @@
-#include <memory>
-#include "Collection.h"
 #include "Note.h"
+#include "Collection.h"
 #include "Editor.h"
-#include <iostream>
-
 
 int main(){
-    auto e = new Editor();
+    /*auto e = new Editor();
     auto wc = e->addCollection(std::string("coll"));
 
     auto n1 = e->createNote(std::string("Note 1"));
@@ -18,7 +15,18 @@ int main(){
     e->deleteNote(n1.lock());
     std::cout << n1.use_count() << std::endl;
 
-    e->removeCollection(wc.lock());
+    e->removeCollection(wc.lock());*/
+
+    /*auto e = new Editor();
+    auto wn = e->createNote(std::string("note"));
+    auto wn_name = wn.lock()->getName();
+    auto coll = e->addCollection(std::string("coll"));
+    e->addNoteToCollection(wn_name, std::string("coll"));
+
+    e->removeNotefromCollection(wn_name, std::string("inexistent collection"));
+    int i = wn.lock()->numOfCollections();
+    e->removeNotefromCollection(wn_name, std::string("coll"));
+    i = wn.lock()->numOfCollections();*/
 
     return 0;
 }
