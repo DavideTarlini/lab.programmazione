@@ -5,41 +5,104 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
+#include "Subject.h"
 #include "Observer.h"
+#include "Note.h"
 
-
-class Collection : public Observer {
+class Collection : public Subject {
     private:
         std::string name;
-        int size;
+        std::vector<std::shared_ptr<Note>> notes;
+        std::vector<std::weak_ptr<Observer>> observers;
 
     public:
         Collection(const std::string& name);
         ~Collection() = default;
         const std::string getName() const;
-        const int getSize() const;
-        void update(std::weak_ptr<Observer> obs, bool attached) override;
+        void addNote(const std::shared_ptr<Note> note);
+        void removeNote(const std::shared_ptr<Note> note);
+        std::weak_ptr<Note> getNote(const std::string& name);
+        void attach(const std::weak_ptr<Observer> observer) override;
+        void detach(const std::weak_ptr<Observer> observer) override;
+        void notifyObservers(bool NoteAdded) override;
+        const int numOfObservers() const;
         bool operator==(const Collection& obs) const;
 };
 
-Collection::Collection(const std::string& name) : name(name), size(0) {}
+Collection::Collection(const std::string& name) : name(name) {}
 
 const std::string Collection::getName() const {
     return name;
 }
 
-const int Collection::getSize() const {
-    return size;
+void Collection::addNote(const std::shared_ptr<Note> note) {
+    notes.push_back(note);
+    notifyObservers(true);
 }
 
-void Collection::update(std::weak_ptr<Observer> obs, bool attached) {
-    auto s_obs = obs.lock();
-    if(s_obs && s_obs.get() == this){
-        if(attached)
-            size++;
-        else
-            size--;
+void Collection::removeNote(const std::shared_ptr<Note> note) {
+    int i = 0;
+    for(auto n: notes){
+        if(n.get() == note.get())
+            break;
+            
+        i++;
     }
+
+    auto it = std::next(notes.begin(), i);
+    if (it != notes.end()) {
+        notes.erase(it);
+    }
+
+    notifyObservers(false);
+}
+
+std::weak_ptr<Note> Collection::getNote(const std::string &name) {
+     std::weak_ptr<Note> wn;
+
+    for(auto n: notes) {
+        if(n->getName() == name){
+            wn = n;
+            break;
+        }
+    }
+
+    return wn;
+}
+
+void Collection::attach(const std::weak_ptr<Observer> observer) {
+    observers.push_back(observer);
+}
+
+void Collection::detach(const std::weak_ptr<Observer> observer) {
+    auto working_observer = observer.lock();
+    if(working_observer){
+        int i = 0;
+        for(auto obs: observers){
+            auto o = obs.lock();
+            if(o && o.get() == working_observer.get())
+                break;
+            
+            i++;
+        }
+
+        auto it = std::next(observers.begin(), i);
+        if (it != observers.end()) {
+            observers.erase(it);
+        }
+    }
+}
+
+void Collection::notifyObservers(bool noteAdded) {
+    for(auto o: observers){
+        auto obs = o.lock();
+        if(obs)
+            obs->update(noteAdded);
+    }
+}
+
+const int Collection::numOfObservers() const {
+    return observers.size();
 }
 
 bool Collection::operator==(const Collection& obs) const {

@@ -7,9 +7,10 @@ class Observer;
 
 class Subject {
 public:
-    virtual void attach(std::weak_ptr<Observer> obs) = 0;
-    virtual void detach(std::weak_ptr<Observer> obs) = 0;
-    virtual void notifyObservers(std::weak_ptr<Observer> obs, bool attached) = 0;
+    virtual ~Subject() = default;
+    virtual void attach(const std::weak_ptr<Observer> obs) = 0;
+    virtual void detach(const std::weak_ptr<Observer> obs) = 0;
+    virtual void notifyObservers(bool NoteAdded) = 0;
 };
 
 #endif

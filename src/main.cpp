@@ -1,6 +1,5 @@
 #include "Note.h"
 #include "Collection.h"
-#include "Editor.h"
 
 int main(){
     /*auto e = new Editor();

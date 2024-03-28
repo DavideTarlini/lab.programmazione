@@ -8,8 +8,8 @@ add_executable(lab.programmazione
     src/Subject.h
     src/Observer.h
     src/Note.h
-    src/Editor.h
     src/Collection.h
+    src/CollectionObserver.h
 )
 
 enable_testing()
