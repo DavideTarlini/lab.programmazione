@@ -5,13 +5,16 @@
 #include <vector>
 #include <memory>
 
+class Collection;
+
 class Note {
 private:
     std::string name;
     std::string text;
     bool locked;
     bool inColl;
-
+    void setInCollection(bool in);
+    
 public:
     Note(const std::string& name, const std::string& text);
     ~Note() = default;
@@ -22,9 +25,10 @@ public:
     void setText(const std::string& newText);
     const std::string& getName() const;
     const std::string& getText() const;
-    void setInCollection(bool in);
     const bool inCollection() const;
     bool operator==(const Note& note) const;
+
+    friend Collection;
 };
 
 Note::Note(const std::string& name, const std::string& text)
