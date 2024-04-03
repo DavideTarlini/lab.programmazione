@@ -10,13 +10,14 @@
 #include "Note.h"
 
 class Collection : public Subject {
-    protected:
+    private:
         std::string name;
+        bool important;
         std::vector<std::weak_ptr<Note>> notes;
         std::vector<std::weak_ptr<Observer>> observers;
 
     public:
-        Collection(const std::string& name);
+        Collection(const std::string& name, const bool isImportant);
         ~Collection() = default;
         const std::string getName() const;
         void addNote(const std::weak_ptr<Note> note);
@@ -26,10 +27,9 @@ class Collection : public Subject {
         void detach(const std::weak_ptr<Observer> observer) override;
         void notifyObservers(bool noteAdded) override;
         const int numOfObservers() const;
-        bool operator==(const Collection& obs) const;
 };
 
-Collection::Collection(const std::string& name) : name(name) {}
+Collection::Collection(const std::string& name, bool isImportant) : name(name), important(isImportant) {}
 
 const std::string Collection::getName() const {
     return name;
@@ -37,10 +37,11 @@ const std::string Collection::getName() const {
 
 void Collection::addNote(const std::weak_ptr<Note> note) {
     auto n = note.lock();
-    if(n && !n->inCollection()){
+    if(n && (!n->inCollection() || important)){
         notes.push_back(note);
         notifyObservers(true);
-        n->setInCollection(true);
+        if(!important)
+            n->setInCollection(true);
     }
 }
 
@@ -59,7 +60,8 @@ void Collection::removeNote(const std::weak_ptr<Note> note) {
         auto it = std::next(notes.begin(), i);
         if (it != notes.end()) {
             notes.erase(it);
-            s_note->setInCollection(false);
+            if(!important)
+                s_note->setInCollection(false);
         }
 
         notifyObservers(false);
@@ -113,10 +115,6 @@ void Collection::notifyObservers(bool noteAdded) {
 
 const int Collection::numOfObservers() const {
     return observers.size();
-}
-
-bool Collection::operator==(const Collection& obs) const {
-    return this == &obs;
 }
 
 #endif
