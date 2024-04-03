@@ -10,6 +10,7 @@ private:
     std::string name;
     std::string text;
     bool locked;
+    bool inColl;
 
 public:
     Note(const std::string& name, const std::string& text);
@@ -21,11 +22,13 @@ public:
     void setText(const std::string& newText);
     const std::string& getName() const;
     const std::string& getText() const;
+    void setInCollection(bool in);
+    const bool inCollection() const;
     bool operator==(const Note& note) const;
 };
 
 Note::Note(const std::string& name, const std::string& text)
-    : name(name), text(text), locked(false) {}
+    : name(name), text(text), locked(false), inColl(false) {}
 
 void Note::lock() {
     locked = true;
@@ -55,6 +58,14 @@ const std::string& Note::getName() const {
 
 const std::string& Note::getText() const {
     return text;
+}
+
+void Note::setInCollection(bool in) {
+    inColl = in;
+}
+
+const bool Note::inCollection() const {
+    return inColl;
 }
 
 bool Note::operator==(const Note& note) const{

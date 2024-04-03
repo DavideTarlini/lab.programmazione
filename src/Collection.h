@@ -10,21 +10,21 @@
 #include "Note.h"
 
 class Collection : public Subject {
-    private:
+    protected:
         std::string name;
-        std::vector<std::shared_ptr<Note>> notes;
+        std::vector<std::weak_ptr<Note>> notes;
         std::vector<std::weak_ptr<Observer>> observers;
 
     public:
         Collection(const std::string& name);
         ~Collection() = default;
         const std::string getName() const;
-        void addNote(const std::shared_ptr<Note> note);
-        void removeNote(const std::shared_ptr<Note> note);
-        std::weak_ptr<Note> getNote(const std::string& name);
+        void addNote(const std::weak_ptr<Note> note);
+        void removeNote(const std::weak_ptr<Note> note);
+        const std::weak_ptr<Note> getNote(const std::string &name) const;
         void attach(const std::weak_ptr<Observer> observer) override;
         void detach(const std::weak_ptr<Observer> observer) override;
-        void notifyObservers(bool NoteAdded) override;
+        void notifyObservers(bool noteAdded) override;
         const int numOfObservers() const;
         bool operator==(const Collection& obs) const;
 };
@@ -35,33 +35,43 @@ const std::string Collection::getName() const {
     return name;
 }
 
-void Collection::addNote(const std::shared_ptr<Note> note) {
-    notes.push_back(note);
-    notifyObservers(true);
+void Collection::addNote(const std::weak_ptr<Note> note) {
+    auto n = note.lock();
+    if(n && !n->inCollection()){
+        notes.push_back(note);
+        notifyObservers(true);
+        n->setInCollection(true);
+    }
 }
 
-void Collection::removeNote(const std::shared_ptr<Note> note) {
-    int i = 0;
-    for(auto n: notes){
-        if(n.get() == note.get())
-            break;
-            
-        i++;
-    }
+void Collection::removeNote(const std::weak_ptr<Note> note) {
+    auto s_note = note.lock();
+    if(s_note){
+        int i = 0;
+        for(auto n: notes){
+            auto s_n = n.lock();
+            if(s_n && s_n.get() == s_note.get())
+                break;
+                
+            i++;
+        }
 
-    auto it = std::next(notes.begin(), i);
-    if (it != notes.end()) {
-        notes.erase(it);
-    }
+        auto it = std::next(notes.begin(), i);
+        if (it != notes.end()) {
+            notes.erase(it);
+            s_note->setInCollection(false);
+        }
 
-    notifyObservers(false);
+        notifyObservers(false);
+    }
 }
 
-std::weak_ptr<Note> Collection::getNote(const std::string &name) {
-     std::weak_ptr<Note> wn;
+const std::weak_ptr<Note> Collection::getNote(const std::string &name) const {
+    std::weak_ptr<Note> wn;
 
     for(auto n: notes) {
-        if(n->getName() == name){
+        auto s_n = n.lock();
+        if(s_n && s_n->getName() == name){
             wn = n;
             break;
         }

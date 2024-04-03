@@ -3,6 +3,7 @@
 #include "../src/Collection.h"
 #include "../src/CollectionObserver.h"
 #include "../src/Note.h"
+#include "../src/ImportantCollection.h"
 
 TEST(NoteTest, edit){
     auto note = new Note(std::string("note"), std::string("text"));
@@ -43,10 +44,22 @@ TEST(CollectionTest, detach){
 
 TEST(CollectionTest, addNote){
     auto n = std::make_shared<Note>(std::string("note"), std::string("text"));
-    auto coll = std::make_shared<Collection>(std::string("coll"));
-    
-    coll->addNote(n);
-    auto addedNote = coll->getNote(std::string("note"));
+    auto coll_1 = std::make_shared<Collection>(std::string("coll"));
+    auto coll_2 = std::make_shared<Collection>(std::string("coll"));
+    auto imp_coll = std::make_shared<ImportantCollection>();
+
+    coll_1->addNote(n);
+    auto addedNote = coll_1->getNote(std::string("note"));
+    auto n_added = n->inCollection();
+    ASSERT_EQ(true, n_added);
+    ASSERT_EQ(n.get(), addedNote.lock().get());
+
+    coll_2->addNote(n);
+    addedNote = coll_2->getNote(std::string("note"));
+    ASSERT_EQ(nullptr, addedNote.lock().get());
+
+    imp_coll->addNote(n);
+    addedNote = imp_coll->getNote(std::string("note"));
     ASSERT_EQ(n.get(), addedNote.lock().get());
 }
 
