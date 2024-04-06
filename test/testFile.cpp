@@ -25,13 +25,15 @@ TEST(CollectionObserverTest, attach){
     auto obs = new CollectionObserver(coll);
 
     ASSERT_EQ(1, coll->numOfObservers());
+
+    delete obs;
 }
 
 TEST(CollectionObserverTest, detach){
     auto coll = std::make_shared<Collection>(std::string("coll"), false);
     auto obs = new CollectionObserver(coll);
 
-    obs->~CollectionObserver();
+    delete obs;
     ASSERT_EQ(0, coll->numOfObservers());
 }
 
@@ -61,9 +63,9 @@ TEST(CollectionTest, addNote){
     ASSERT_EQ(1, obs_imp->getObservedSize());
     ASSERT_EQ(n.get(), addedNote.lock().get());
 
-    obs_1->~CollectionObserver();
-    obs_2->~CollectionObserver();
-    obs_imp->~CollectionObserver();
+    delete obs_1;
+    delete obs_2;
+    delete obs_imp;
 }
 
 TEST(CollectionTest, removeNote){
@@ -76,5 +78,5 @@ TEST(CollectionTest, removeNote){
     coll->removeNote(n);
     ASSERT_EQ(0, o->getObservedSize());
 
-    o->~CollectionObserver();
+    delete o;
 }
