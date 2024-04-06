@@ -9,7 +9,7 @@ private:
 public:
     CollectionObserver() = default;
     ~CollectionObserver() = default;
-    void update(const bool added);
+    void update(const bool added) override;
     const int getObservedSize();
 };
 
