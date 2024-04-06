@@ -21,10 +21,7 @@ CollectionObserver::CollectionObserver(std::weak_ptr<Collection> sbj) {
     if(s){
         s->attach(this);
         subject = sbj; 
-        auto s = subject.lock();
-        if(s){
-            observedSize = s->getSize();
-        }
+        observedSize = s->getSize();
     }
 }
 
