@@ -4,38 +4,35 @@
 #include "Observer.h"
 #include "Collection.h"
 
-class CollectionObserver : public Observer, std::enable_shared_from_this<CollectionObserver> {
+class CollectionObserver : public Observer {
 private:
     int observedSize;
-    std::weak_ptr<Collection> subject;
+    Collection* subject;
 
 public:
-    CollectionObserver(std::weak_ptr<Collection> sbj);
+    CollectionObserver(Collection* sbj);
     ~CollectionObserver();
     void update() override;
     const int getObservedSize();
 };
 
-CollectionObserver::CollectionObserver(std::weak_ptr<Collection> sbj) {
-    auto s = sbj.lock();
-    if(s){
-        s->attach(this);
+CollectionObserver::CollectionObserver(Collection* sbj) {
+    if(sbj){
+        sbj->attach(this);
         subject = sbj; 
-        observedSize = s->getSize();
+        observedSize = sbj->getSize();
     }
 }
 
 CollectionObserver::~CollectionObserver() {
-    auto s = subject.lock();
-    if(s){
-        s->detach(this); 
+    if(subject){
+        subject->detach(this); 
     }
 }
 
 void CollectionObserver::update() {
-    auto s = subject.lock();
-    if(s){
-        observedSize = s->getSize();
+    if(subject){
+        observedSize = subject->getSize();
     }
 }
 
