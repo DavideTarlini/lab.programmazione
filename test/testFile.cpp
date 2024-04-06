@@ -20,39 +20,29 @@ TEST(NoteTest, edit){
     ASSERT_EQ(std::string("new text"), note->getText());
 }
 
-TEST(CollectionTest, attach){
-    auto obs = std::make_shared<CollectionObserver>();
+TEST(CollectionObserverTest, attach){
     auto coll = std::make_shared<Collection>(std::string("coll"), false);
+    auto obs = new CollectionObserver(coll);
 
-    coll->attach(obs);
     ASSERT_EQ(1, coll->numOfObservers());
 }
 
-TEST(CollectionTest, detach){
-    auto obs_1 = std::make_shared<CollectionObserver>();
-    auto obs_2 = std::make_shared<CollectionObserver>();
+TEST(CollectionObserverTest, detach){
     auto coll = std::make_shared<Collection>(std::string("coll"), false);
+    auto obs = new CollectionObserver(coll);
 
-    coll->attach(obs_1);
-    coll->detach(obs_2);
-    ASSERT_EQ(1, coll->numOfObservers());
-
-    coll->detach(obs_1);
+    obs->~CollectionObserver();
     ASSERT_EQ(0, coll->numOfObservers());
 }
 
 TEST(CollectionTest, addNote){
     auto n = std::make_shared<Note>(std::string("note"), std::string("text"));
-    auto obs_1 = std::make_shared<CollectionObserver>();
-    auto obs_2 = std::make_shared<CollectionObserver>();
-    auto obs_imp = std::make_shared<CollectionObserver>();
     auto coll_1 = std::make_shared<Collection>(std::string("coll"), false);
     auto coll_2 = std::make_shared<Collection>(std::string("coll"), false);
     auto imp_coll = std::make_shared<Collection>(std::string("Important Notes"), true);
-
-    coll_1->attach(obs_1);
-    coll_2->attach(obs_2);
-    imp_coll->attach(obs_imp);
+    auto obs_1 = new CollectionObserver(coll_1);
+    auto obs_2 = new CollectionObserver(coll_2);
+    auto obs_imp = new CollectionObserver(imp_coll);
 
     coll_1->addNote(n);
     auto addedNote = coll_1->getNote(std::string("note"));
@@ -70,16 +60,21 @@ TEST(CollectionTest, addNote){
     addedNote = imp_coll->getNote(std::string("note"));
     ASSERT_EQ(1, obs_imp->getObservedSize());
     ASSERT_EQ(n.get(), addedNote.lock().get());
+
+    obs_1->~CollectionObserver();
+    obs_2->~CollectionObserver();
+    obs_imp->~CollectionObserver();
 }
 
 TEST(CollectionTest, removeNote){
     auto n = std::make_shared<Note>(std::string("note"), std::string("text"));
     auto coll = std::make_shared<Collection>(std::string("coll"), false);
-    auto o = std::make_shared<CollectionObserver>();
+    auto o = new CollectionObserver(coll);
 
-    coll->attach(o);
     coll->addNote(n);
     coll->getNote(std::string("note"));
     coll->removeNote(n);
     ASSERT_EQ(0, o->getObservedSize());
+
+    o->~CollectionObserver();
 }

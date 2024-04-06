@@ -14,24 +14,25 @@ class Collection : public Subject {
         std::string name;
         bool important;
         std::vector<std::weak_ptr<Note>> notes;
-        std::vector<std::weak_ptr<Observer>> observers;
+        std::vector<Observer*> observers;
 
     public:
         Collection(const std::string& name, const bool isImportant);
         ~Collection() = default;
-        const std::string getName() const;
+        std::string getName() const;
         void addNote(const std::weak_ptr<Note> note);
         void removeNote(const std::weak_ptr<Note> note);
         const std::weak_ptr<Note> getNote(const std::string &name) const;
-        void attach(const std::weak_ptr<Observer> observer) override;
-        void detach(const std::weak_ptr<Observer> observer) override;
-        void notifyObservers(bool noteAdded) override;
-        const int numOfObservers() const;
+        void attach(Observer* observer) override;
+        void detach(Observer* observer) override;
+        void notifyObservers() const override;
+        int getSize() const;
+        int numOfObservers() const;
 };
 
 Collection::Collection(const std::string& name, bool isImportant) : name(name), important(isImportant) {}
 
-const std::string Collection::getName() const {
+std::string Collection::getName() const {
     return name;
 }
 
@@ -39,7 +40,7 @@ void Collection::addNote(const std::weak_ptr<Note> note) {
     auto n = note.lock();
     if(n && (!n->inCollection() || important)){
         notes.push_back(note);
-        notifyObservers(true);
+        notifyObservers();
         if(!important)
             n->setInCollection(true);
     }
@@ -64,7 +65,7 @@ void Collection::removeNote(const std::weak_ptr<Note> note) {
                 s_note->setInCollection(false);
         }
 
-        notifyObservers(false);
+        notifyObservers();
     }
 }
 
@@ -82,38 +83,37 @@ const std::weak_ptr<Note> Collection::getNote(const std::string &name) const {
     return wn;
 }
 
-void Collection::attach(const std::weak_ptr<Observer> observer) {
+void Collection::attach(Observer* observer) {
     observers.push_back(observer);
 }
 
-void Collection::detach(const std::weak_ptr<Observer> observer) {
-    auto working_observer = observer.lock();
-    if(working_observer){
-        int i = 0;
-        for(auto obs: observers){
-            auto o = obs.lock();
-            if(o && o.get() == working_observer.get())
-                break;
-            
-            i++;
-        }
-
-        auto it = std::next(observers.begin(), i);
-        if (it != observers.end()) {
-            observers.erase(it);
-        }
-    }
-}
-
-void Collection::notifyObservers(bool noteAdded) {
+void Collection::detach(Observer* observer) {
+    int i = 0;
     for(auto o: observers){
-        auto obs = o.lock();
-        if(obs)
-            obs->update(noteAdded);
+        if(o && o == observer)
+            break;
+            
+        i++;
+    }
+
+    auto it = std::next(observers.begin(), i);
+    if (it != observers.end()) {
+        observers.erase(it);
     }
 }
 
-const int Collection::numOfObservers() const {
+void Collection::notifyObservers() const {
+    for(auto o: observers){
+        if(o)
+            o->update();
+    }
+}
+
+int Collection::getSize() const {
+    return notes.size();
+}
+
+int Collection::numOfObservers() const {
     return observers.size();
 }
 

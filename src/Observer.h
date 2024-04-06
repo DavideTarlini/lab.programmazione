@@ -6,7 +6,7 @@
 class Observer {
 public:
     virtual ~Observer() = default;
-    virtual void update(bool msg) = 0;
+    virtual void update() = 0;
 };
 
 #endif 
